@@ -137,6 +137,8 @@ contract LiquidationOperator is IUniswapV2Callee {
     uint8 public constant health_factor_decimals = 18;
 
     // TODO: define constants used in the contract including ERC-20 tokens, Uniswap Pairs, Aave lending pools, etc. */
+    uint256 Block_Number = 12489620; // not sure it is needed uptil now
+   
     address addrUSDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7; 
     address addrWBTC = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599; 
     address addrWETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
@@ -190,7 +192,8 @@ contract LiquidationOperator is IUniswapV2Callee {
     }
 
     // TODO: add a `receive` function so that you can withdraw your WETH
-    //   *** Your code here ***
+    receive() external payable {}
+ //   *** Your code here ***
     // END TODO
 
     // required by the testing script, entry for your liquidation call
@@ -222,7 +225,11 @@ contract LiquidationOperator is IUniswapV2Callee {
         // we know that the target user borrowed USDT with WBTC as collateral
         // we should borrow USDT, liquidate the target user and get the WBTC, then swap WBTC to repay uniswap
         // (please feel free to develop other workflows as long as they liquidate the target user successfully)
-        //    *** Your code here ***
+        
+        uint256 amount1Out = debt2repay1 + debt2repay2;
+        console.log("To call swap with amount0Out = %s, amount1Out = %s", 0, amount1Out);
+        IUniswapV2Pair(pairAddress).swap(amount0Out, amount1Out, address(this), data);
+//    *** Your code here ***
 
         // 3. Convert the profit into ETH and send back to sender
         //    *** Your code here ***
@@ -240,17 +247,31 @@ contract LiquidationOperator is IUniswapV2Callee {
         // TODO: implement your liquidation logic
 
         // 2.0. security checks and initializing variables
-        //    *** Your code here ***
+        address token0 = IUniswapV2Pair(msg.sender).token0(); // fetch the address of token0
+        address token1 = IUniswapV2Pair(msg.sender).token1(); // fetch the address of token1
+        assert(msg.sender == IUniswapV2Factory(factoryV2).getPair(token0, token1)); // ensure that msg.sender is a V2 pair
+//    *** Your code here ***
 
         // 2.1 liquidate the target user
-        //    *** Your code here ***
+        //false to receive as WBTC
+        ILendingPool.liquidationCall(token0, token1, ? borrower address?, debt2repay1, false);
+        //now I think we should call liquidation twice, false to receive as WBTC
+       // ILendingPool.liquidationCall(token0, token1, ?? borrower address??, debt2repay2, false);
+//    *** Your code here ***
 
         // 2.2 swap WBTC for other things or repay directly
+        unit amountRequired = getAmountIn(sender, token0, token1);
+        IUniswapV2Pair.swap(amount0Out, amountRequired, owner, data);
         //    *** Your code here ***
 
         // 2.3 repay
-        //    *** Your code here ***
-        
-        // END TODO
+    //    *** Your code here ***
+        WETH.withdraw (debt2repay1);
+        payable(msg.sender).transfer(debt2repay1);
+        //2nd round
+        ILendingPool.liquidationCall(token0, token1, ?? borrower address??, debt2repay2, false);
+        WETH.withdraw(debt2repay2);
+        payable(msg.sender).transfer(deb2repay2);
+    // END TODO
     }
 }

@@ -260,8 +260,10 @@ contract LiquidationOperator is IUniswapV2Callee {
 //    *** Your code here ***
 
         // 2.2 swap WBTC for other things or repay directly
-        unit amountRequired = getAmountIn(sender, token0, token1);
-        IUniswapV2Pair.swap(amount0Out, amountRequired, owner, data);
+       // unit amountRequired = getAmountIn(sender, token0, token1);
+       // IUniswapV2Pair.swap(amount0Out, amountRequired, owner, data);
+     uint256 amount3 = 0;
+
         //    *** Your code here ***
 
         // 2.3 repay

@@ -131,12 +131,18 @@ interface IUniswapV2Pair {
 }
 
 // ----------------------IMPLEMENTATION------------------------------
+//Shymaa fork code embedding starts from here
 
 contract LiquidationOperator is IUniswapV2Callee {
     uint8 public constant health_factor_decimals = 18;
 
     // TODO: define constants used in the contract including ERC-20 tokens, Uniswap Pairs, Aave lending pools, etc. */
-    //    *** Your code here ***
+    address addrUSDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7; 
+    address addrWBTC = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599; 
+    address addrWETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    // END TODO
+    address _token0 = 0xdAC17F958D2ee523a2206206994597C13D831ec7; // 0x00000000dac17f958d2ee523a2206206994597c13d831ec7; // _USDT;
+    address _token1 = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599; // 0x000000002260fac5e5542a773aa44fbcfedf7c193bc2c599; // _WBTC;
     // END TODO
 
     // some helper function, it is totally fine if you can finish the lab without using these function
@@ -193,6 +199,20 @@ contract LiquidationOperator is IUniswapV2Callee {
 
         // 0. security checks and initializing variables
         //    *** Your code here ***
+
+       // 1. get the target user account data & make sure it is liquidatable
+        //    *** Your code here ***
+
+//Trying to do 2 liquidation steps as slide 40 in lecture6, so 0.49
+    require(healthFactor < (1 * 10 ** 18), "Can't liquidate borrower HF >=1!");
+    uint256 debt2repay1 = totalDebtETH* 0.49;
+    console.log("First liquidation step %s", debt2repay1);
+    
+//second step, should be still acceptable health factor
+    require(healthFactor < (1 * 10 ** 18), "Can't liquidate borrower HF >=1!");
+    uint256 debt2repay2 = totalDebtETH *;
+    console.log("Second liquidation step %s", debt2repay2);
+
 
         // 1. get the target user account data & make sure it is liquidatable
         //    *** Your code here ***

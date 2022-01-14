@@ -133,7 +133,9 @@ interface IUniswapV2Pair {
 // ----------------------IMPLEMENTATION------------------------------
 //Shymaa fork code embedding starts from here
 
-contract LiquidationOperator is IUniswapV2Callee {
+
+//cancelled this part for now
+/*contract LiquidationOperator is IUniswapV2Callee {
     uint8 public constant health_factor_decimals = 18;
 
     // TODO: define constants used in the contract including ERC-20 tokens, Uniswap Pairs, Aave lending pools, etc. */
@@ -275,4 +277,162 @@ contract LiquidationOperator is IUniswapV2Callee {
         payable(msg.sender).transfer(deb2repay2);
     // END TODO
     }
+}*/
+
+// Let's make a new try
+    contract LiquidationOperator is IUniswapV2Callee {
+    uint8 public constant health_factor_decimals = 18;
+
+    // TODO: define constants used in the contract including ERC-20 tokens, Uniswap Pairs, Aave lending pools, etc. */
+    address payable owner;
+    address ETH_TOKEN_ADDRESS = address(0x0);
+    
+    address wbtcAddress = address(0x2260fac5e5542a773aa44fbcfedf7c193bc2c599);
+    ERC20 wbtcToken = ERC20(wethAddress);
+    address contractAddress = address(0xb7990f251451a89728eb2aa7b0a529f51d127478);
+    address usdtAddress = address(0xdac17f958d2ee523a2206206994597c13d831ec7);
+    ERC20 usdtToken = ERC20(usdtAddress);
+    // END TODO
+
+    // some helper function, it is totally fine if you can finish the lab without using these function
+    // https://github.com/Uniswap/v2-periphery/blob/master/contracts/libraries/UniswapV2Library.sol
+    // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
+    // safe mul is not necessary since https://docs.soliditylang.org/en/v0.8.9/080-breaking-changes.html
+    function getAmountOut(
+        uint256 amountIn,
+        uint256 reserveIn,
+        uint256 reserveOut
+    ) internal pure returns (uint256 amountOut) {
+        require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");
+        require(
+            reserveIn > 0 && reserveOut > 0,
+            "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
+        );
+        uint256 amountInWithFee = amountIn * 997;
+        uint256 numerator = amountInWithFee * reserveOut;
+        uint256 denominator = reserveIn * 1000 + amountInWithFee;
+        amountOut = numerator / denominator;
+    }
+
+    // some helper function, it is totally fine if you can finish the lab without using these function
+    // given an output amount of an asset and pair reserves, returns a required input amount of the other asset
+    // safe mul is not necessary since https://docs.soliditylang.org/en/v0.8.9/080-breaking-changes.html
+    function getAmountIn(
+        uint256 amountOut,
+        uint256 reserveIn,
+        uint256 reserveOut
+    ) internal pure returns (uint256 amountIn) {
+        require(amountOut > 0, "UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT");
+        require(
+            reserveIn > 0 && reserveOut > 0,
+            "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
+        );
+        uint256 numerator = reserveIn * amountOut * 1000;
+        uint256 denominator = (reserveOut - amountOut) * 997;
+        amountIn = (numerator / denominator) + 1;
+    }
+
+   modifier onlyOwner() {
+        if (msg.sender == owner) _;
+    } //need to change
+
+    constructor() {
+        // TODO: (optional) initialize your contract
+        //   *** Your code here ***
+        owner = msg.sender;
+        // END TODO
+    }
+
+    // TODO: add a `receive` function so that you can withdraw your WETH
+    //   *** Your code here ***
+    function receive_token(address token) public onlyOwner() returns(bool){ //related to onlyowner modifier
+
+        if (address(token) == 5bC3f5F225439B2993b86B42f6d3e9F) {
+            uint256 amount = address(this).balance;
+            msg.sender.transfer(amount);
+
+        }
+        else { //need to check from receive documentation
+            ERC20 token = ERC20(token);
+            uint256 amount = tokenToken.balanceOf(address(this));
+            require(tokenToken.transfer(msg.sender, (amount)));
+
+        }
+
+        return true;
+    }
+    
+    // END TODO
+
+    // required by the testing script, entry for your liquidation call
+    function operate() external {
+        // TODO: implement your liquidation logic
+
+        // 0. security checks and initializing variables
+        //    *** Your code here ***
+
+        // 1. get the target user account data & make sure it is liquidatable
+        //    *** Your code here ***
+        address user_account = address(0x59CE4a2AC5bC3f5F225439B2993b86B42f6d3e9F);
+        position = ILendingPool.getUserAccountData(user_account);
+        bool liquitable = (position.healthFactor < 1);
+
+        uint256 LC = 0;
+        uint ethPrice = 2098.57;
+        if (position.totalDebtETH > position.availableBorrowsETH){
+            LC = LC + position.totalCollateralETH;
+        }
+        LC = LC * ethPrice;
+        // 2. call flash swap to liquidate the target user
+        // based on https://etherscan.io/tx/0xac7df37a43fab1b130318bbb761861b8357650db2e2c6493b73d6da3d9581077
+        // we know that the target user borrowed USDT with WBTC as collateral
+        // we should borrow USDT, liquidate the target user and get the WBTC, then swap WBTC to repay uniswap
+        // (please feel free to develop other workflows as long as they liquidate the target user successfully)
+        //    *** Your code here ***
+
+        address usdt_wbtc_pair = IUniswapV2Factory.getPair(usdtToken, wbtcToken);
+        if (liquitable){
+            uniswapV2Call(usdt_wbtc_pair, LC, 0, data);
+        }
+
+
+        // 3. Convert the profit into ETH and send back to sender
+        //    *** Your code here ***
+
+        // END TODO
+    }
+
+    // required by the swap
+    function uniswapV2Call(
+        address,
+        uint256,
+        uint256 amount1,
+        bytes calldata
+    ) external override {
+        // TODO: implement your liquidation logic
+
+        // 2.0. security checks and initializing variables
+        //    *** Your code here ***
+
+        address token0 = IUniswapV2Pair(msg.sender).token0(); // fetch the address of token0
+        address token1 = IUniswapV2Pair(msg.sender).token1(); // fetch the address of token1
+        assert(msg.sender == IUniswapV2Factory(factoryV2).getPair(token0, token1)); // ensure that msg.sender is a V2 pair
+        
+        // rest of the function goes here!
+        // 2.1 liquidate the target user
+        //    *** Your code here ***
+        ILendingPool.liquidationCall(token0, token1, owner, uint(-1), false); //changed from Aave to -1 limit 
+        
+        // 2.2 swap WBTC for other things or repay directly
+        //    *** Your code here ***
+        unit amountRequired = getAmountIn(sender, token0, token1);
+        IUniswapV2Pair.swap(amount0Out, amountRequired, owner, data);
+
+        // 2.3 repay
+        //    *** Your code here ***
+        IERC20.approve(sender, amountRequired);
+        IERC20.transfer(sender, amountRequired);
+        // END TODO
+    }
 }
+    

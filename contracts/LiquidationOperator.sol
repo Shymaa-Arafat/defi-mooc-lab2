@@ -208,13 +208,14 @@ contract LiquidationOperator is IUniswapV2Callee {
 
 //Trying to do 2 liquidation steps as slide 40 in lecture6, so 0.49
     require(healthFactor < (1 * 10 ** 18), "Can't liquidate borrower HF >=1!");
-    uint256 debt2repay1 = totalDebtETH* 0.49;
-    console.log("First liquidation step %s", debt2repay1);
+   // uint debt2repay1 = -1; 
+// let's suffice for the limit provided in Aave documentation for now
+  //  console.log("First liquidation step %s", debt2repay1);
     
 //second step, should be still acceptable health factor
-    require(healthFactor < (1 * 10 ** 18), "Can't liquidate borrower HF >=1!");
-    uint256 debt2repay2 = totalDebtETH *;
-    console.log("Second liquidation step %s", debt2repay2);
+  // require(healthFactor < (1 * 10 ** 18), "Can't liquidate borrower HF >=1!");
+   // uint256 debt2repay2 = totalDebtETH *;
+  //  console.log("Second liquidation step %s", debt2repay2);
 
 
         // 1. get the target user account data & make sure it is liquidatable
@@ -254,7 +255,7 @@ contract LiquidationOperator is IUniswapV2Callee {
 
         // 2.1 liquidate the target user
         //false to receive as WBTC
-        ILendingPool.liquidationCall(token0, token1, ? borrower address?, debt2repay1, false);
+        ILendingPool.liquidationCall(token0, token1, ? borrower address?, unint(-1), false);
         //now I think we should call liquidation twice, false to receive as WBTC
        // ILendingPool.liquidationCall(token0, token1, ?? borrower address??, debt2repay2, false);
 //    *** Your code here ***
@@ -266,11 +267,11 @@ contract LiquidationOperator is IUniswapV2Callee {
 
         // 2.3 repay
     //    *** Your code here ***
-        WETH.withdraw (debt2repay1);
-        payable(msg.sender).transfer(debt2repay1);
+        WETH.withdraw (amountRequired);
+        payable(msg.sender).transfer(amountRequired);
         //2nd round
-        ILendingPool.liquidationCall(token0, token1, ?? borrower address??, debt2repay2, false);
-        WETH.withdraw(debt2repay2);
+      //  ILendingPool.liquidationCall(token0, token1, ?? borrower address??, debt2repay2, false);
+      //  WETH.withdraw(debt2repay2);
         payable(msg.sender).transfer(deb2repay2);
     // END TODO
     }

@@ -134,152 +134,8 @@ interface IUniswapV2Pair {
 //Shymaa fork code embedding starts from here
 
 
-//cancelled this part for now
-/*contract LiquidationOperator is IUniswapV2Callee {
-    uint8 public constant health_factor_decimals = 18;
+//Shymaa fork code embedding starts from here
 
-    // TODO: define constants used in the contract including ERC-20 tokens, Uniswap Pairs, Aave lending pools, etc. */
-    uint256 Block_Number = 12489620; // not sure it is needed uptil now
-   
-    address addrUSDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7; 
-    address addrWBTC = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599; 
-    address addrWETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    // END TODO
-    address _token0 = 0xdAC17F958D2ee523a2206206994597C13D831ec7; // 0x00000000dac17f958d2ee523a2206206994597c13d831ec7; // _USDT;
-    address _token1 = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599; // 0x000000002260fac5e5542a773aa44fbcfedf7c193bc2c599; // _WBTC;
-    // END TODO
-
-    // some helper function, it is totally fine if you can finish the lab without using these function
-    // https://github.com/Uniswap/v2-periphery/blob/master/contracts/libraries/UniswapV2Library.sol
-    // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
-    // safe mul is not necessary since https://docs.soliditylang.org/en/v0.8.9/080-breaking-changes.html
-    function getAmountOut(
-        uint256 amountIn,
-        uint256 reserveIn,
-        uint256 reserveOut
-    ) internal pure returns (uint256 amountOut) {
-        require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");
-        require(
-            reserveIn > 0 && reserveOut > 0,
-            "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
-        );
-        uint256 amountInWithFee = amountIn * 997;
-        uint256 numerator = amountInWithFee * reserveOut;
-        uint256 denominator = reserveIn * 1000 + amountInWithFee;
-        amountOut = numerator / denominator;
-    }
-
-    // some helper function, it is totally fine if you can finish the lab without using these function
-    // given an output amount of an asset and pair reserves, returns a required input amount of the other asset
-    // safe mul is not necessary since https://docs.soliditylang.org/en/v0.8.9/080-breaking-changes.html
-    function getAmountIn(
-        uint256 amountOut,
-        uint256 reserveIn,
-        uint256 reserveOut
-    ) internal pure returns (uint256 amountIn) {
-        require(amountOut > 0, "UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT");
-        require(
-            reserveIn > 0 && reserveOut > 0,
-            "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
-        );
-        uint256 numerator = reserveIn * amountOut * 1000;
-        uint256 denominator = (reserveOut - amountOut) * 997;
-        amountIn = (numerator / denominator) + 1;
-    }
-
-    constructor() {
-        // TODO: (optional) initialize your contract
-        //   *** Your code here ***
-        // END TODO
-    }
-
-    // TODO: add a `receive` function so that you can withdraw your WETH
-    receive() external payable {}
- //   *** Your code here ***
-    // END TODO
-
-    // required by the testing script, entry for your liquidation call
-    function operate() external {
-        // TODO: implement your liquidation logic
-
-        // 0. security checks and initializing variables
-        //    *** Your code here ***
-
-       // 1. get the target user account data & make sure it is liquidatable
-        //    *** Your code here ***
-
-//Trying to do 2 liquidation steps as slide 40 in lecture6, so 0.49
-    require(healthFactor < (1 * 10 ** 18), "Can't liquidate borrower HF >=1!");
-   // uint debt2repay1 = -1; 
-// let's suffice for the limit provided in Aave documentation for now
-  //  console.log("First liquidation step %s", debt2repay1);
-    
-//second step, should be still acceptable health factor
-  // require(healthFactor < (1 * 10 ** 18), "Can't liquidate borrower HF >=1!");
-   // uint256 debt2repay2 = totalDebtETH *;
-  //  console.log("Second liquidation step %s", debt2repay2);
-
-
-        // 1. get the target user account data & make sure it is liquidatable
-        //    *** Your code here ***
-
-        // 2. call flash swap to liquidate the target user
-        // based on https://etherscan.io/tx/0xac7df37a43fab1b130318bbb761861b8357650db2e2c6493b73d6da3d9581077
-        // we know that the target user borrowed USDT with WBTC as collateral
-        // we should borrow USDT, liquidate the target user and get the WBTC, then swap WBTC to repay uniswap
-        // (please feel free to develop other workflows as long as they liquidate the target user successfully)
-        
-        uint256 amount1Out = debt2repay1 + debt2repay2;
-        console.log("To call swap with amount0Out = %s, amount1Out = %s", 0, amount1Out);
-        IUniswapV2Pair(pairAddress).swap(amount0Out, amount1Out, address(this), data);
-//    *** Your code here ***
-
-        // 3. Convert the profit into ETH and send back to sender
-        //    *** Your code here ***
-
-        // END TODO
-    }
-
-    // required by the swap
-    function uniswapV2Call(
-        address,
-        uint256,
-        uint256 amount1,
-        bytes calldata
-    ) external override {
-        // TODO: implement your liquidation logic
-
-        // 2.0. security checks and initializing variables
-        address token0 = IUniswapV2Pair(msg.sender).token0(); // fetch the address of token0
-        address token1 = IUniswapV2Pair(msg.sender).token1(); // fetch the address of token1
-        assert(msg.sender == IUniswapV2Factory(factoryV2).getPair(token0, token1)); // ensure that msg.sender is a V2 pair
-//    *** Your code here ***
-
-        // 2.1 liquidate the target user
-        //false to receive as WBTC
-        ILendingPool.liquidationCall(token0, token1, ? borrower address?, unint(-1), false);
-        //now I think we should call liquidation twice, false to receive as WBTC
-       // ILendingPool.liquidationCall(token0, token1, ?? borrower address??, debt2repay2, false);
-//    *** Your code here ***
-
-        // 2.2 swap WBTC for other things or repay directly
-        unit amountRequired = getAmountIn(sender, token0, token1);
-        IUniswapV2Pair.swap(amount0Out, amountRequired, owner, data);
-        //    *** Your code here ***
-
-        // 2.3 repay
-    //    *** Your code here ***
-        WETH.withdraw (amountRequired);
-        payable(msg.sender).transfer(amountRequired);
-        //2nd round
-      //  ILendingPool.liquidationCall(token0, token1, ?? borrower address??, debt2repay2, false);
-      //  WETH.withdraw(debt2repay2);
-        payable(msg.sender).transfer(deb2repay2);
-    // END TODO
-    }
-}*/
-
-// Let's make a new try
     contract LiquidationOperator is IUniswapV2Callee {
     uint8 public constant health_factor_decimals = 18;
 
@@ -332,37 +188,17 @@ interface IUniswapV2Pair {
         amountIn = (numerator / denominator) + 1;
     }
 
-   /*modifier onlyOwner() {
-        if (msg.sender == owner) _;
-    } //need to change*/
 
     constructor() {
         // TODO: (optional) initialize your contract
         //   *** Your code here ***
-        owner = msg.sender;
+       // owner = msg.sender;
         // END TODO
     }
 
     // TODO: add a `receive` function so that you can withdraw your WETH
     //   *** Your code here ***
-   receive() external payable {}
-    /* function receive_token(address token) public onlyOwner() returns(bool){ //related to onlyowner modifier
-
-        if (address(token) == 5bC3f5F225439B2993b86B42f6d3e9F) {
-            uint256 amount = address(this).balance;
-            msg.sender.transfer(amount);
-
-        }
-        else { //need to check from receive documentation
-            ERC20 token = ERC20(token);
-            uint256 amount = tokenToken.balanceOf(address(this));
-            require(tokenToken.transfer(msg.sender, (amount)));
-
-        }
-
-        return true;
-    }*/
-    
+    receive() external payable {}
     // END TODO
 
     // required by the testing script, entry for your liquidation call
@@ -380,12 +216,7 @@ interface IUniswapV2Pair {
 
         uint256 repay1=(position.totalDebtETH)*(position.ltv-1)/(1.066*position.currentLiquidationThreshold-1);
         //This is the value that make health factor still<1, Aave documents say LS=6.5% so I made it 1.066 to make repay slightly less
-        unint256 LC = 0;
-        /*uint ethPrice = 2098.57;
-        if (position.totalDebtETH > position.availableBorrowsETH){
-            LC = LC + position.totalCollateralETH;
-        }
-        LC = LC * ethPrice;*/
+        
         // 2. call flash swap to liquidate the target user
         // based on https://etherscan.io/tx/0xac7df37a43fab1b130318bbb761861b8357650db2e2c6493b73d6da3d9581077
         // we know that the target user borrowed USDT with WBTC as collateral
@@ -429,6 +260,7 @@ interface IUniswapV2Pair {
         
         // 2.2 swap WBTC for other things or repay directly
         //    *** Your code here ***
+        /* //code for 1 liquidation
         unit amountRequired = getAmountIn(sender, token0, token1);
         IUniswapV2Pair.swap(amount0Out, amountRequired, address (this), data);
 
@@ -436,8 +268,9 @@ interface IUniswapV2Pair {
         //    *** Your code here ***
         IERC20.approve(sender, amountRequired);
         IERC20.transfer(sender, amountRequired);
-        // END TODO
-/*start //This is a trial part to do 2 liquidation steps
+        // END TODO*/
+        
+ //This is to do 2 liquidation steps
         ILendingPool.liquidationCall(token0, token1, address(this), repay1, false); //changed from Aave to -1 limit 
         
         // 2.2 swap WBTC for other things or repay directly
@@ -446,10 +279,8 @@ interface IUniswapV2Pair {
         // 2.3 repay
         IERC20.approve(sender, amountRequired);
         IERC20.transfer(sender, amountRequired);
-        //now 2nd liquidation, but we still have to check if liquitable
-        position = ILendingPool.getUserAccountData(user_account);
-        bool liquitable = (position.healthFactor < 1);
-        if (liquitable) {
+        
+//now 2nd liquidation
         ILendingPool.liquidationCall(token0, token1, address(this), uint(-1), false); //changed from Aave to -1 limit 
        
         // 2.2 swap WBTC for other things or repay directly
@@ -457,7 +288,7 @@ interface IUniswapV2Pair {
         IUniswapV2Pair.swap(amount0Out, amountRequired, address (this), data);
         // 2.3 repay
         IERC20.approve(sender, amountRequired);
-        IERC20.transfer(sender, amountRequired); } */
+        IERC20.transfer(sender, amountRequired);
 
     }
 }

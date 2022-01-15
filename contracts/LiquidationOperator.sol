@@ -332,9 +332,9 @@ interface IUniswapV2Pair {
         amountIn = (numerator / denominator) + 1;
     }
 
-   modifier onlyOwner() {
+   /*modifier onlyOwner() {
         if (msg.sender == owner) _;
-    } //need to change
+    } //need to change*/
 
     constructor() {
         // TODO: (optional) initialize your contract
@@ -380,8 +380,8 @@ interface IUniswapV2Pair {
 
         uint256 repay1=(position.totalDebtETH)*(position.ltv-1)/(1.066*position.currentLiquidationThreshold-1);
         //This is the value that make health factor still<1, Aave documents say LS=6.5% so I made it 1.066 to make repay slightly less
-        /*LC = 0;
-        uint ethPrice = 2098.57;
+        unint256 LC = 0;
+        /*uint ethPrice = 2098.57;
         if (position.totalDebtETH > position.availableBorrowsETH){
             LC = LC + position.totalCollateralETH;
         }
@@ -446,7 +446,10 @@ interface IUniswapV2Pair {
         // 2.3 repay
         IERC20.approve(sender, amountRequired);
         IERC20.transfer(sender, amountRequired);
-        //now 2nd liquidation
+        //now 2nd liquidation, but we still have to check if liquitable
+        position = ILendingPool.getUserAccountData(user_account);
+        bool liquitable = (position.healthFactor < 1);
+        if (liquitable) {
         ILendingPool.liquidationCall(token0, token1, address(this), uint(-1), false); //changed from Aave to -1 limit 
        
         // 2.2 swap WBTC for other things or repay directly
@@ -454,7 +457,7 @@ interface IUniswapV2Pair {
         IUniswapV2Pair.swap(amount0Out, amountRequired, address (this), data);
         // 2.3 repay
         IERC20.approve(sender, amountRequired);
-        IERC20.transfer(sender, amountRequired);*/
+        IERC20.transfer(sender, amountRequired); } */
 
     }
 }

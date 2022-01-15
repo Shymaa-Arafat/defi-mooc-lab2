@@ -345,7 +345,8 @@ interface IUniswapV2Pair {
 
     // TODO: add a `receive` function so that you can withdraw your WETH
     //   *** Your code here ***
-    function receive_token(address token) public onlyOwner() returns(bool){ //related to onlyowner modifier
+   receive() external payable {}
+    /* function receive_token(address token) public onlyOwner() returns(bool){ //related to onlyowner modifier
 
         if (address(token) == 5bC3f5F225439B2993b86B42f6d3e9F) {
             uint256 amount = address(this).balance;
@@ -360,7 +361,7 @@ interface IUniswapV2Pair {
         }
 
         return true;
-    }
+    }*/
     
     // END TODO
 

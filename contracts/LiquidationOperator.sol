@@ -332,9 +332,9 @@ interface IUniswapV2Pair {
         amountIn = (numerator / denominator) + 1;
     }
 
-   modifier onlyOwner() {
+  /* modifier onlyOwner() {
         if (msg.sender == owner) _;
-    } //need to change
+    } //need to change*/
 
     constructor() {
         // TODO: (optional) initialize your contract
@@ -378,12 +378,15 @@ interface IUniswapV2Pair {
         position = ILendingPool.getUserAccountData(user_account);
         bool liquitable = (position.healthFactor < 1);
 
-        uint256 LC = 0;
-        uint ethPrice = 2098.57;
+       
+       // uint256 LC = 0;
+        unint256 repay1=position.totalDebtETH*(position.ltv-1)/(1.066*position.currentLiquidationThreshold-1);
+        //incase I had a chance to perform 2 liquidation steps
+       /*uint ethPrice = 2098.57;
         if (position.totalDebtETH > position.availableBorrowsETH){
             LC = LC + position.totalCollateralETH;
         }
-        LC = LC * ethPrice;
+        LC = LC * ethPrice;*/
         // 2. call flash swap to liquidate the target user
         // based on https://etherscan.io/tx/0xac7df37a43fab1b130318bbb761861b8357650db2e2c6493b73d6da3d9581077
         // we know that the target user borrowed USDT with WBTC as collateral
@@ -393,7 +396,7 @@ interface IUniswapV2Pair {
 
         address usdt_wbtc_pair = IUniswapV2Factory.getPair(usdtToken, wbtcToken);
         if (liquitable){
-            uniswapV2Call(usdt_wbtc_pair, LC, 0, data);
+            uniswapV2Call(usdt_wbtc_pair,0.6*position.totalDebtETH, 0, data);
         }
 
 
@@ -427,12 +430,18 @@ interface IUniswapV2Pair {
         // 2.2 swap WBTC for other things or repay directly
         //    *** Your code here ***
         unit amountRequired = getAmountIn(sender, token0, token1);
-        IUniswapV2Pair.swap(amount0Out, amountRequired, owner, data);
+        IUniswapV2Pair.swap(amount0Out, amountRequired, address(this), data);
 
         // 2.3 repay
         //    *** Your code here ***
         IERC20.approve(sender, amountRequired);
         IERC20.transfer(sender, amountRequired);
+
+/* //2nd round if had time to do it
+         ILendingPool.liquidationCall(token0, token1, address(this), uint(-1), false); //changed from Aave to -1 limit 
+         IERC20.approve(sender, amountRequired);
+         IERC20.transfer(sender, amountRequired);*/
+
         // END TODO
     }
 }

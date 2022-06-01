@@ -373,8 +373,9 @@ contract LiquidationOperator is IUniswapV2Callee {
         console.log("After 2nd liquidation USDT Balance, is me different than sender? USDT=", balance_in_wbtc);
         balance_in_wbtc = IERC20(WETH).balanceOf(me);
         console.log("After 2nd liquidation WETH Balance, is me different than sender? WETH=", balance_in_wbtc);
-        console.log("reserves_wbtc=",reserves_wbtc);
-        console.log("reserves_weth=",reserves_weth);
+        //These r the pool reserves just checked for sufficient liquidity actually no need to print them
+        //console.log("reserves_wbtc=",reserves_wbtc);
+        //console.log("reserves_weth=",reserves_weth);
        
         
         // // 2.2 swap WBTC for other things or repay directly
